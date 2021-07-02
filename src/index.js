@@ -24,8 +24,7 @@ let toDos = [
 // defining the Express app
 const app = express();
 
-// adding Helmet to enhance your API's security
-app.use(helmet());
+nres = app.use(helmet()); // adding Helmet to enhance your API's security
 
 // using bodyParser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
@@ -54,7 +53,7 @@ app.use(checkJwt);
 
 function hasScope(requiredScope) {
   return function(req, res, next) {
-    const { scope } = req.user;
+    const scope = req.user.scope;
     const scopeArray = scope.split(' ');
     if (!scopeArray.includes(requiredScope)) {
       return res.status(403).send({ message: 'Insufficient authorization.' });
@@ -65,6 +64,12 @@ function hasScope(requiredScope) {
 
 // endpoint to return all to dos
 app.get('/', hasScope('read:to-dos'), (req, res) => {
+  let response = toDos;
+  //getting user attribute from access_token
+  let userName = req.user['https://mtanuri.com/name'];
+  //using user attribute (userName) in response
+  response[0].description =
+    response[0].description + '. Tell them it is for ' + userName;
   res.send(toDos);
 });
 
